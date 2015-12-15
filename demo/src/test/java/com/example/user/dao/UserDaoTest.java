@@ -7,13 +7,20 @@ import java.sql.SQLException;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.example.user.User;
 
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/applicationContext.xml")
 public class UserDaoTest {
+	@Autowired
+	private ApplicationContext context;
 	private UserDao dao;
 	private User user1;
 	private User user2;
@@ -21,13 +28,7 @@ public class UserDaoTest {
 	
 	@Before
 	public void setup() {
-		dao = new UserDao();
-		SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
-		dataSource.setDriverClass(com.mysql.jdbc.Driver.class);
-		dataSource.setUrl("jdbc:mysql://localhost:3306/product");
-		dataSource.setUsername("product");
-		dataSource.setPassword("product");
-		dao.setDataSource(dataSource);
+		dao = context.getBean("userDao", UserDao.class);
 		
 		user1 = new User("gyumee", "박성철", "springno1");
 		user2 = new User("leegw700", "이길원", "springno2");

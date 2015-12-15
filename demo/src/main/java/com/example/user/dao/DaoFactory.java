@@ -25,4 +25,11 @@ public class DaoFactory {
 		
 		return dataSource;
 	}
+	
+	@Bean
+	public JdbcContext jdbcContext() {
+		JdbcContext context = new JdbcContext();
+		context.setDataSource(dataSource());
+		return context;
+	}
 }
