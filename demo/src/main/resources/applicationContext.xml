@@ -10,7 +10,7 @@
 		<property name="username" value="product"></property>
 		<property name="password" value="product"></property>
 	</bean>
-	<bean id="userDao" class="com.example.user.dao.UserDao">
+	<bean id="userDao" class="com.example.user.dao.UserDaoJdbc">
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>
 </beans>
