@@ -10,6 +10,13 @@
 		<property name="username" value="product"></property>
 		<property name="password" value="product"></property>
 	</bean>
+	<bean id="userLevelUpgradePolicy" class="com.example.user.service.UserLevelUpgradePolicyImpl">
+		<property name="userDao" ref="userDao"></property>
+	</bean>
+	<bean id="userService" class="com.example.user.service.UserService">
+		<property name="userDao" ref="userDao"></property>
+		<property name="userLevelUpgradePolicy" ref="userLevelUpgradePolicy"></property>
+	</bean>
 	<bean id="userDao" class="com.example.user.dao.UserDaoJdbc">
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>

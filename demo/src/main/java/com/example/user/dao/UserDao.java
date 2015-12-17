@@ -5,9 +5,10 @@ import java.util.List;
 import com.example.user.User;
 
 public interface UserDao {
-	void add(User user);
-	User get(String id);
-	List<User> getAll();
-	void deleteAll();
-	int getCount();
+	public int add(User user);
+	public User get(String id);
+	public List<User> getAll();
+	public int deleteAll();
+	public int getCount();
+	public int update(User user);
 }
