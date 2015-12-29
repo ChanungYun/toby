@@ -1,13 +1,15 @@
 package com.example.user.service;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import static com.example.user.service.UserLevelUpgradePolicy.MIN_LOGCOUNT_FOR_SILVER;
 import static com.example.user.service.UserLevelUpgradePolicy.MIN_RECOMMEND_FOR_GOLD;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,19 +17,42 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import com.example.user.Level;
 import com.example.user.User;
 import com.example.user.dao.UserDao;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
+@ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
+	
+	static class TestUserService extends UserService {
+		private String id;
+		
+		private TestUserService(String id) {
+			this.id = id;
+		}
+		
+		protected void upgradeLevel(User user) {
+			if (user.getId().equals(this.id)) throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
+	}
+	
+	static class TestUserServiceException extends RuntimeException {
+		
+	}
+	
 	@Autowired
 	UserService userService;
 	@Autowired
 	UserDao userDao;
 	List<User> users;
+	@Autowired
+	UserLevelUpgradePolicy userLevelUpgradePolicy;
+	@Autowired
+	PlatformTransactionManager transactionManager;
 	
 	@Before
 	public void setUp() {
@@ -41,7 +66,7 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void upgradeLevels() {
+	public void upgradeLevels() throws Exception {
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
 		
@@ -70,7 +95,24 @@ public class UserServiceTest {
 		
 		assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
 		assertThat(userWithoutLevelRead.getLevel(), is(userWithoutLevel.getLevel()));
+	}
+	
+	@Test
+	public void upgradeAllOrNothing() throws Exception {
+		UserService testUserService = new TestUserService(users.get(3).getId());
+		testUserService.setUserDao(this.userDao);
+		testUserService.setUserLevelUpgradePolicy(this.userLevelUpgradePolicy);
+		testUserService.setTransactionManager(this.transactionManager);
+		userDao.deleteAll();
+		for(User user : users) userDao.add(user);
 		
+		try {
+			testUserService.upgradeLevels();
+			fail("TestUserServiceException expected");
+		} catch (TestUserServiceException e) {
+		}
+		
+		checkLevelUpgraded(users.get(1), false);
 	}
 
 	private void checkLevelUpgraded(User user, boolean upgraded) {

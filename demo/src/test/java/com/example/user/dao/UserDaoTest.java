@@ -24,7 +24,7 @@ import com.example.user.Level;
 import com.example.user.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
+@ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserDaoTest {
 	@Autowired
 	private ApplicationContext context;
