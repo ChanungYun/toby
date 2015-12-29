@@ -10,15 +10,25 @@ import org.springframework.mail.MailSender;
 
 import com.example.user.service.DummyMailSender;
 import com.example.user.service.UserService;
+import com.example.user.service.UserServiceImpl;
+import com.example.user.service.UserServiceTx;
 
 @Configuration
 public class DaoFactory {
 	@Bean
 	public UserService userService() {
-		UserService userService = new UserService();
-		userService.setUserDao(userDao());
-		userService.setMailSender(mailSender());
+		UserServiceTx userService = new UserServiceTx();
+		userService.setUserService(userServiceImpl());
+		userService.setTransactionManager(transactionManager());
 		return userService;
+	}
+	
+	@Bean
+	public UserServiceImpl userServiceImpl() {
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
+		userServiceImpl.setMailSender(mailSender());
+		userServiceImpl.setUserDao(userDao());
+		return userServiceImpl;
 	}
 
 	@Bean

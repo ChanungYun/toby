@@ -10,9 +10,12 @@
 		<property name="username" value="test"></property>
 		<property name="password" value="test"></property>
 	</bean>
-	<bean id="userService" class="com.example.user.service.UserService">
-		<property name="userDao" ref="userDao"></property>
+	<bean id="userService" class="com.example.user.service.UserServiceTx">
 		<property name="transactionManager" ref="transactionManager"></property>
+		<property name="userService" ref="userServiceImpl"></property>
+	</bean>
+	<bean id="userServiceImpl" class="com.example.user.service.UserServiceImpl">
+		<property name="userDao" ref="userDao"></property>
 		<property name="mailSender" ref="mailSender"></property>
 	</bean>
 	<bean id="userDao" class="com.example.user.dao.UserDaoJdbc">
