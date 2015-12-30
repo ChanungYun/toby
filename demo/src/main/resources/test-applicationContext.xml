@@ -29,6 +29,7 @@
 	<bean id="mailSender" class="com.example.user.service.DummyMailSender">
 <!-- 		<property name="host" value="mail.server.com"></property> -->
 	</bean>
+	<tx:annotation-driven/>
 	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
 		<tx:attributes>
 			<tx:method name="get*" read-only="true" />

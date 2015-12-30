@@ -35,6 +35,7 @@
 			<tx:method name="*" />
 		</tx:attributes>
 	</tx:advice>
+	<tx:annotation-driven/>
 	<aop:config>
 		<aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)" />
 	</aop:config>

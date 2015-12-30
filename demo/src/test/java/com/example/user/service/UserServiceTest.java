@@ -28,7 +28,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.user.Level;
 import com.example.user.User;
@@ -37,6 +39,8 @@ import com.example.user.dao.UserDao;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
 //@ContextConfiguration(classes={DaoFactory.class})
+@Transactional
+//@TransactionConfiguration(defaultRollback=false)
 public class UserServiceTest {
 	
 	public static class TestUserServiceImpl extends UserServiceImpl {
@@ -209,6 +213,13 @@ public class UserServiceTest {
 	@Test(expected=TransientDataAccessResourceException.class)
 	public void readOnlyTransactionAttribute() {
 		testUserService.getAll();
+	}
+	
+	@Test
+	public void transactionSync() {
+		userService.deleteAll();
+		userService.add(users.get(0));
+		userService.add(users.get(1));
 	}
 
 	private void checkLevelUpgraded(User user, boolean upgraded) {
