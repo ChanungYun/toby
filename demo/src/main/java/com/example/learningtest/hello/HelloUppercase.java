@@ -18,8 +18,8 @@ public class HelloUppercase implements Hello {
 	}
 
 	@Override
-	public String isayThankYou(String name) {
-		return hello.isayThankYou(name).toUpperCase();
+	public String sayThankYou(String name) {
+		return hello.sayThankYou(name).toUpperCase();
 	}
 
 }

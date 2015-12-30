@@ -13,7 +13,7 @@ public class HelloTarget implements Hello {
 	}
 
 	@Override
-	public String isayThankYou(String name) {
+	public String sayThankYou(String name) {
 		return "Thank You " + name;
 	}
 

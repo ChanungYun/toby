@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -40,12 +39,8 @@ import com.example.user.dao.UserDao;
 //@ContextConfiguration(classes={DaoFactory.class})
 public class UserServiceTest {
 	
-	static class TestUserService extends UserServiceImpl {
-		private String id;
-		
-		private TestUserService(String id) {
-			this.id = id;
-		}
+	public static class TestUserServiceImpl extends UserServiceImpl {
+		private String id = "madnite1";
 		
 		protected void upgradeLevel(User user) {
 			if (user.getId().equals(this.id)) throw new TestUserServiceException();
@@ -101,12 +96,12 @@ public class UserServiceTest {
 	}
 	
 	@Autowired UserService userService;
-	@Autowired UserServiceImpl userServiceImpl;
 	@Autowired UserDao userDao;
 	List<User> users;
 	@Autowired PlatformTransactionManager transactionManager;
 	@Autowired MailSender mailSender;
 	@Autowired ApplicationContext context;
+	@Autowired UserService testUserService;
 	
 	@Before
 	public void setUp() {
@@ -162,21 +157,12 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	@DirtiesContext
 	public void upgradeAllOrNothing() throws Exception {
-		TestUserService testUserService = new TestUserService(users.get(3).getId());
-		testUserService.setUserDao(this.userDao);
-		testUserService.setMailSender(this.mailSender);
-		
-		ProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", ProxyFactoryBean.class);
-		txProxyFactoryBean.setTarget(testUserService);		
-		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
-		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
 		
 		try {
-			txUserService.upgradeLevels();
+			this.testUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
 		} catch (TestUserServiceException e) {
 		}
@@ -208,8 +194,7 @@ public class UserServiceTest {
 		verify(mockMailSender, times(2)).send(mailMessageArg.capture());
 		List<SimpleMailMessage> mailMessage = mailMessageArg.getAllValues();
 		assertThat(mailMessage.get(0).getTo()[0], is(users.get(1).getEmail()));
-		assertThat(mailMessage.get(1).getTo()[0], is(users.get(3).getEmail()));
-		
+		assertThat(mailMessage.get(1).getTo()[0], is(users.get(3).getEmail()));	
 	}
 
 	private void checkLevelUpgraded(User user, boolean upgraded) {

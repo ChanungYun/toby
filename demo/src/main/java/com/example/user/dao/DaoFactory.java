@@ -2,9 +2,10 @@ package com.example.user.dao;
 
 import javax.sql.DataSource;
 
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
-import org.springframework.aop.support.NameMatchMethodPointcut;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -14,6 +15,7 @@ import org.springframework.mail.MailSender;
 import com.example.user.service.DummyMailSender;
 import com.example.user.service.TransactionAdvice;
 import com.example.user.service.UserServiceImpl;
+import com.example.user.service.UserServiceTest;
 
 @Configuration
 public class DaoFactory {
@@ -78,10 +80,10 @@ public class DaoFactory {
 	}
 	
 	@Bean
-	public NameMatchMethodPointcut transactionPointcut() {
-		NameMatchMethodPointcut nameMathMatchMethodPointcut = new NameMatchMethodPointcut();
-		nameMathMatchMethodPointcut.setMappedName("upgrade*");
-		return nameMathMatchMethodPointcut;
+	public AspectJExpressionPointcut transactionPointcut() {
+		AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
+		pointcut.setExpression("execution(* *..*ServiceImpl.upgrade*(..))");
+		return pointcut;
 	}
 	
 	@Bean
@@ -90,5 +92,18 @@ public class DaoFactory {
 		defaultPointcutAdvisor.setAdvice(transactionAdvice());
 		defaultPointcutAdvisor.setPointcut(transactionPointcut());
 		return defaultPointcutAdvisor;
+	}
+	
+	@Bean
+	public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
+		DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
+		return defaultAdvisorAutoProxyCreator;
+	}
+	
+	@Bean
+	public UserServiceTest.TestUserServiceImpl testUserService() {
+		UserServiceTest.TestUserServiceImpl testUserServiceImpl = new UserServiceTest.TestUserServiceImpl();
+		return testUserServiceImpl;
+		
 	}
 }

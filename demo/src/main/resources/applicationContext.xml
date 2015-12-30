@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
-						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+						http://www.springframework.org/schema/aop
+						http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
 	
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
 		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
@@ -10,15 +13,7 @@
 		<property name="username" value="product"></property>
 		<property name="password" value="product"></property>
 	</bean>
-	<bean id="userService" class="org.springframework.aop.framework.ProxyFactoryBean">
-		<property name="target" ref="userServiceImpl"></property>
-		<property name="interceptorNames">
-			<list>
-				<value>transactionAdvisor</value>
-			</list>
-		</property>
-	</bean>
-	<bean id="userServiceImpl" class="com.example.user.service.UserServiceImpl">
+	<bean id="userService" class="com.example.user.service.UserServiceImpl">
 		<property name="userDao" ref="userDao"></property>
 		<property name="mailSender" ref="mailSender"></property>
 	</bean>
@@ -34,11 +29,9 @@
 	<bean id="transactionAdvice" class="com.example.user.service.TransactionAdvice">
 		<property name="transactionManager" ref="transactionManager"></property>
 	</bean>
-	<bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
-		<property name="mappedName" value="upgrade*"></property>
-	</bean>
-	<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
-		<property name="advice" ref="transactionAdvice"></property>
-		<property name="pointcut" ref="transactionPointcut"></property>
-	</bean>
+	<aop:config>
+		<aop:pointcut expression="execution(* *..*ServiceImpl.upgrade*(..))" id="transactionPointcut" />
+		<aop:advisor advice-ref="transactionAdvice" pointcut-ref="transactionPointcut" />
+	</aop:config>
+	<bean id="testUserService" class="com.example.user.service.UserServiceTest$TestUserServiceImpl" parent="userService" />
 </beans>
