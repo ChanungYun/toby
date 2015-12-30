@@ -10,9 +10,11 @@
 		<property name="username" value="test"></property>
 		<property name="password" value="test"></property>
 	</bean>
-	<bean id="userService" class="com.example.user.service.UserServiceTx">
+	<bean id="userService" class="com.example.user.service.TxProxyFactoryBean">
+		<property name="target" ref="userServiceImpl"></property>
 		<property name="transactionManager" ref="transactionManager"></property>
-		<property name="userService" ref="userServiceImpl"></property>
+		<property name="pattern" value="upgradeLevels"></property>
+		<property name="serviceInterface" value="com.example.user.service.UserService"></property>
 	</bean>
 	<bean id="userServiceImpl" class="com.example.user.service.UserServiceImpl">
 		<property name="userDao" ref="userDao"></property>

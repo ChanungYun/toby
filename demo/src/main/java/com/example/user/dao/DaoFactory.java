@@ -9,17 +9,19 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.mail.MailSender;
 
 import com.example.user.service.DummyMailSender;
+import com.example.user.service.TxProxyFactoryBean;
 import com.example.user.service.UserService;
 import com.example.user.service.UserServiceImpl;
-import com.example.user.service.UserServiceTx;
 
 @Configuration
 public class DaoFactory {
 	@Bean
-	public UserService userService() {
-		UserServiceTx userService = new UserServiceTx();
-		userService.setUserService(userServiceImpl());
+	public TxProxyFactoryBean userService() {
+		TxProxyFactoryBean userService = new TxProxyFactoryBean();
+		userService.setTarget(userServiceImpl());
 		userService.setTransactionManager(transactionManager());
+		userService.setPattern("upgradeLevels");
+		userService.setServiceInterface(UserService.class);
 		return userService;
 	}
 	

@@ -5,11 +5,11 @@ import static com.example.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -30,6 +31,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.example.user.Level;
 import com.example.user.User;
+import com.example.user.dao.DaoFactory;
 import com.example.user.dao.UserDao;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -97,17 +99,13 @@ public class UserServiceTest {
 		
 	}
 	
-	@Autowired
-	UserService userService;
-	@Autowired
-	UserServiceImpl userServiceImpl;
-	@Autowired
-	UserDao userDao;
+	@Autowired UserService userService;
+	@Autowired UserServiceImpl userServiceImpl;
+	@Autowired UserDao userDao;
 	List<User> users;
-	@Autowired
-	PlatformTransactionManager transactionManager;
-	@Autowired
-	MailSender mailSender;
+	@Autowired PlatformTransactionManager transactionManager;
+	@Autowired MailSender mailSender;
+	@Autowired ApplicationContext context;
 	
 	@Before
 	public void setUp() {
@@ -163,14 +161,15 @@ public class UserServiceTest {
 	}
 	
 	@Test
+	@DirtiesContext
 	public void upgradeAllOrNothing() throws Exception {
 		TestUserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
 		testUserService.setMailSender(this.mailSender);
 		
-		UserServiceTx txUserService = new UserServiceTx();
-		txUserService.setTransactionManager(transactionManager);
-		txUserService.setUserService(testUserService);
+		TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", TxProxyFactoryBean.class);
+		txProxyFactoryBean.setTarget(testUserService);		
+		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
 		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
