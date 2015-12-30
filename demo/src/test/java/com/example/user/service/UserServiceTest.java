@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -31,7 +32,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.example.user.Level;
 import com.example.user.User;
-import com.example.user.dao.DaoFactory;
 import com.example.user.dao.UserDao;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,9 +42,18 @@ public class UserServiceTest {
 	public static class TestUserServiceImpl extends UserServiceImpl {
 		private String id = "madnite1";
 		
+		@Override
 		protected void upgradeLevel(User user) {
 			if (user.getId().equals(this.id)) throw new TestUserServiceException();
 			super.upgradeLevel(user);
+		}
+		
+		@Override
+		public List<User> getAll() {
+			for(User user : super.getAll()) {
+				super.update(user);
+			}
+			return null;
 		}
 	}
 	
@@ -195,6 +204,11 @@ public class UserServiceTest {
 		List<SimpleMailMessage> mailMessage = mailMessageArg.getAllValues();
 		assertThat(mailMessage.get(0).getTo()[0], is(users.get(1).getEmail()));
 		assertThat(mailMessage.get(1).getTo()[0], is(users.get(3).getEmail()));	
+	}
+	
+	@Test(expected=TransientDataAccessResourceException.class)
+	public void readOnlyTransactionAttribute() {
+		testUserService.getAll();
 	}
 
 	private void checkLevelUpgraded(User user, boolean upgraded) {
